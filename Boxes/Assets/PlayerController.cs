@@ -6,43 +6,80 @@ public class PlayerController : MonoBehaviour {
 	public float speed = 10f;
 	public float tileMultip = 1;
 	public LayerMask obstacleMask;
-	//public Boundary screenBounds;
-
+	public int bufferTimeout;
 	Vector3 targetPos;
 	Vector3 currentPos;
 	bool reachedPos = true;
 	string faceDir = "";
+	string bufferDir = "";
+	int bufferTime = 0;
+
+
 
 	void Start() {
 		targetPos = transform.position;
-		faceDir = "u";
+		faceDir = "";
 	}
-
 
 	// Update is called once per frame
 	void FixedUpdate () {
+		print (bufferDir);
+		if(bufferTime > 0){
+			bufferTime--;
+		}
+		else{
+			bufferDir = "";
+		}
+
 		Vector2 input = new Vector2(Input.GetAxisRaw ("Horizontal"), Input.GetAxisRaw("Vertical"));
-		if (input.x > 0) {
-			MovePlayerRight ();
+		string nextDir = "";
+		bool onTile = transform.position == targetPos;
+
+		if (input.x > 0 && !faceDir.Equals("r")) {
+			nextDir = "r";
 		}
-		if (input.x < 0) {
-			MovePlayerLeft ();
+		else if (input.x < 0 && !faceDir.Equals("l")) {
+			nextDir = "l";
 		}
 
-		if (input.y > 0) {
-			MovePlayerUp ();
+		else if (input.y > 0 && !faceDir.Equals("u")) {
+			nextDir = "u";
 		}
-		if (input.y < 0) {
-			MovePlayerDown ();
-		}
-		currentPos = transform.position;
 
-		if (transform.position == targetPos) {
+		else if (input.y < 0 && !faceDir.Equals("d")) {
+			nextDir = "d";
+		}
+
+		if (!nextDir.Equals ("")) {
+			bufferDir = nextDir;
+			bufferTime = bufferTimeout;
+		}		
+
+		if (onTile) {
+			print ("Kek1");
+			faceDir = "";
 			reachedPos = true;
+			switch(bufferDir){
+			case "r":
+				MovePlayerRight ();
+				break;
+			case "l":
+				MovePlayerLeft ();
+				break;
+			case "u":
+				MovePlayerUp ();
+				break;
+			case "d":
+				MovePlayerDown ();
+				break;
+			
+			}
+			bufferDir = "";
 		}
-		targetPos.x = targetPos.x;//Mathf.Clamp (targetPos.x, screenBounds.xMin, screenBounds.xMax);
-		targetPos.y = targetPos.y;//Mathf.Clamp (targetPos.y, screenBounds.yMin, screenBounds.yMax);
-		transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * speed);
+		if (!onTile) {
+			transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * speed);
+		}
+
 		//RotatePlayer ();
 	}
 
