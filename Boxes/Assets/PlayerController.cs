@@ -2,148 +2,66 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent (typeof(PhysicsController))]
 public class PlayerController : MonoBehaviour {
-	public float speed = 10f;
-	public float tileMultip = 1;
-	public LayerMask obstacleMask;
-	public int bufferTimeout;
-	Vector3 targetPos;
-	Vector3 currentPos;
-	bool reachedPos = true;
-	string faceDir = "";
-	string bufferDir = "";
-	int bufferTime = 0;
+	public float speed = 5f;
+	public float pushPower = 5f;
+	public bool playerOne = true;
 
-
+	bool moving = true;
+	Vector2 movementDirection;
+	PhysicsController phys;
 
 	void Start() {
-		targetPos = transform.position;
-		faceDir = "";
+		phys = gameObject.GetComponent<PhysicsController> ();
 	}
-
-	// Update is called once per frame
+		
 	void FixedUpdate () {
-		print (bufferDir);
-		if(bufferTime > 0){
-			bufferTime--;
-		}
-		else{
-			bufferDir = "";
-		}
-
-		Vector2 input = new Vector2(Input.GetAxisRaw ("Horizontal"), Input.GetAxisRaw("Vertical"));
-		string nextDir = "";
-		bool onTile = transform.position == targetPos;
-
-		if (input.x > 0 && !faceDir.Equals("r")) {
-			nextDir = "r";
-		}
-		else if (input.x < 0 && !faceDir.Equals("l")) {
-			nextDir = "l";
-		}
-
-		else if (input.y > 0 && !faceDir.Equals("u")) {
-			nextDir = "u";
-		}
-
-		else if (input.y < 0 && !faceDir.Equals("d")) {
-			nextDir = "d";
-		}
-
-		if (!nextDir.Equals ("")) {
-			bufferDir = nextDir;
-			bufferTime = bufferTimeout;
-		}		
-
-		if (onTile) {
-			print ("Kek1");
-			faceDir = "";
-			reachedPos = true;
-			switch(bufferDir){
-			case "r":
-				MovePlayerRight ();
-				break;
-			case "l":
-				MovePlayerLeft ();
-				break;
-			case "u":
-				MovePlayerUp ();
-				break;
-			case "d":
-				MovePlayerDown ();
-				break;
-			
-			}
-			bufferDir = "";
-		}
-		if (!onTile) {
-			transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * speed);
-		}
-
-		//RotatePlayer ();
-	}
-
-	bool RaycastCheck(Vector3 direction) {
-		float rayLength = 0.01f + tileMultip;
-		Vector3 rayOrigin = transform.position;
-		Debug.DrawLine (rayOrigin, rayOrigin + direction * (rayLength));
-		if (Physics.Raycast (rayOrigin, direction, rayLength, obstacleMask)) {
-			return true;
+		Vector2 input = Vector2.zero;
+		if (playerOne) {
+			input = new Vector2 (Input.GetAxisRaw ("Horizontal1"), Input.GetAxisRaw ("Vertical1"));
 		} else {
-			return false;
+			input = new Vector2 (Input.GetAxisRaw ("Horizontal2"), Input.GetAxisRaw ("Vertical2"));
 		}
+
+		movementDirection = input.normalized;
+
+		Vector2 move = input.normalized;
+		move = move * speed * Time.deltaTime;
+		phys.Move (move);
+		CheckBoxCollision ();
 	}
 
-	void RotatePlayer() {
-		switch (faceDir) {
-		case "u":
-			transform.eulerAngles = new Vector3 (0, 0, 0);
-			break;
-		case "d":
-			transform.eulerAngles = new Vector3 (0, 0, 180);
-			break;
-		case "l":
-			transform.eulerAngles = new Vector3 (0, 0, 90);
-			break;
-		case "r":
-			transform.eulerAngles = new Vector3 (0, 0, -90);
-			break;
-		default:
-			break;
-		}
+	Vector2 FaceDirection() {
+		float up = 0;
+		float right = 0;
+		up = Mathf.Abs(movementDirection.x) < Mathf.Abs(movementDirection.y) ? 1 * Mathf.Sign(movementDirection.y) : 0;
+		right = Mathf.Abs(movementDirection.y) < Mathf.Abs(movementDirection.x) ? 1 * Mathf.Sign(movementDirection.x) : 0;
+		return new Vector2 (right, up);
 	}
 
-	public void MovePlayerLeft() {
-		if (!RaycastCheck (Vector3.left) && reachedPos) {
-			targetPos += Vector3.left * tileMultip;
-			reachedPos = false;
+	Vector2 Collision() {
+		if(phys.collisions.above){
+			return Vector2.up;
 		}
-		faceDir = "l";	
+		if(phys.collisions.below){
+			return Vector2.down;
+		}
+		if(phys.collisions.right){
+			return Vector2.right;
+		}
+		if(phys.collisions.left){
+			return Vector2.left;
+		}
+		return Vector2.zero;
 	}
 
-	public void MovePlayerRight() {
-		if (!RaycastCheck (Vector3.right) && reachedPos) {
-			targetPos += Vector3.right * tileMultip;
-			reachedPos = false;
+	void CheckBoxCollision() {
+		if (phys.collisions.collided != null && phys.collisions.collided.tag == "Box") {
+			BoxController bc = phys.collisions.collided.GetComponent<BoxController> ();	
+			if (bc.velocity.magnitude == 0) {
+				bc.Push (Collision(), pushPower);
+			}
 		}
-		faceDir = "r";
 	}
-
-	public void MovePlayerUp() {
-		if (!RaycastCheck (Vector3.up) && reachedPos) {
-			targetPos += Vector3.up * tileMultip;
-			reachedPos = false;
-		}
-		faceDir = "u";
-	}
-
-	public void MovePlayerDown() {
-		if (!RaycastCheck (Vector3.down) && reachedPos) {
-			targetPos += Vector3.down * tileMultip;
-			reachedPos = false;
-		}
-		faceDir = "d";
-	}
-
-
 }
