@@ -72,6 +72,7 @@ public class MoveBullet : MonoBehaviour {
 		if (phys.collisions.interacted != null && phys.collisions.interacted.tag == "Player") {
 			PlayerController pc = phys.collisions.interacted.GetComponent<PlayerController> ();
 			pc.Damage (1);
+			pc.GetComponent<AudioSource> ().Play ();
 			Destroy (this.gameObject);
 		}
 	}

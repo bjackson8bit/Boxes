@@ -8,11 +8,14 @@ public class PlayerController : MonoBehaviour {
 	public float pushPower = 5f;
 	public bool playerOne = true;
 	public GameObject uiparent;
+	public int invincibilityFrames = 70;
+	int invincibilityCounter = 0;
 	HealthController hc;
 
 	public int baseHealth = 3;
 	int health;
 	bool moving = true;
+	bool hurt = false;
 	Vector2 movementDirection;
 	PhysicsController phys;
 
@@ -23,6 +26,18 @@ public class PlayerController : MonoBehaviour {
 	}
 		
 	void FixedUpdate () {
+		if (hurt) {
+			invincibilityCounter++;
+			if (invincibilityCounter % 5 == 0) {
+				this.GetComponent<MeshRenderer> ().enabled = !this.GetComponent<MeshRenderer> ().enabled;
+			}
+
+			if (invincibilityCounter >= invincibilityFrames) {
+				hurt = false;
+				invincibilityCounter = 0;
+				this.GetComponent<MeshRenderer> ().enabled = true;
+			}
+		}
 		Vector2 input = Vector2.zero;
 		if (playerOne) {
 			input = new Vector2 (Input.GetAxisRaw ("Horizontal1"), Input.GetAxisRaw ("Vertical1"));
@@ -72,7 +87,11 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	internal void Damage(int amt){
-		health -= amt;
-		hc.SetHP (health);
+		if (!hurt) {
+			hurt = true;
+			health -= amt;
+			hc.SetHP (health);
+			this.GetComponent<AudioSource> ().Play ();
+		}
 	}
 }
