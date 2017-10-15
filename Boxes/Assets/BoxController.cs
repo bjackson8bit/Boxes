@@ -8,6 +8,8 @@ public class BoxController: MonoBehaviour {
 	Vector2 wall;
 	PhysicsController phys;
 	public float mass;
+	public MoveBullet bullet;
+
 
 	void Start () {
 		phys = gameObject.GetComponent<PhysicsController> ();
@@ -75,9 +77,13 @@ public class BoxController: MonoBehaviour {
 			float bcVelMag = bc.velocity.magnitude;
 			if (bcVelMag == 0 && this.mass >= bcmass) {
 				bc.Push (Collision (), velocity.magnitude / bcmass);
-			} else if (bcVelMag != 0 && this.mass <= bcmass) {
+			} else if (bcVelMag != 0 && this.mass > bcmass) {
+				Vector2 velocity = Random.insideUnitCircle;
+				GameObject bulletInstance = GameObject.Instantiate (bullet.gameObject, bc.transform.position, bc.transform.rotation);
+				bulletInstance.gameObject.GetComponent<MoveBullet>().SetVelocity(velocity.normalized);
+				bulletInstance.gameObject.GetComponent<MoveBullet>().SetSpeed (Random.Range (5, 7));
 				Destroy (bc.gameObject);
-				Destroy (gameObject);
+
 			} 
 			return bc;
 		}

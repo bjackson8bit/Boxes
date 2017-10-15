@@ -75,5 +75,4 @@ public class PlayerController : MonoBehaviour {
 		health -= amt;
 		hc.SetHP (health);
 	}
-
 }

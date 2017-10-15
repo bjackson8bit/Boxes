@@ -7,6 +7,7 @@ public class MoveBullet : MonoBehaviour {
 	public float speed = 6;
 	public Vector2 velocity;
 	PhysicsController phys;
+	public float bounces = 6;
 
 	const float skinWidth = .015f;
 	BoxCollider collider;
@@ -23,20 +24,30 @@ public class MoveBullet : MonoBehaviour {
 	void FixedUpdate () {
 		phys.Move(velocity * speed * Time.deltaTime);
 		BounceOffWall ();
+		CheckPlayerCollision ();
+		if (bounces <= 0) {
+			Destroy (this.gameObject);
+		}
 	}
 
-	void SetVelocity(Vector2 velocity) {
+	public void SetVelocity(Vector2 velocity) {
 		this.velocity = velocity;
+	}
+
+	public void SetSpeed(float speed) {
+		this.speed = speed;
 	}
 
 	void BounceOffWall() {
 		Vector2 normal = Collision ();
 		if (phys.collisions.above || phys.collisions.below) {
 			velocity = new Vector2 (velocity.x, -velocity.y);
+			bounces--;
 		}
 
 		if (phys.collisions.left || phys.collisions.right) {
 			velocity = new Vector2 (-velocity.x, velocity.y);
+			bounces--;	
 		}
 	}
 
@@ -54,5 +65,14 @@ public class MoveBullet : MonoBehaviour {
 			return Vector2.right;
 		}
 		return Vector2.zero;
+	}
+
+	//Damages player if necessary
+	void CheckPlayerCollision() {
+		if (phys.collisions.interacted != null && phys.collisions.interacted.tag == "Player") {
+			PlayerController pc = phys.collisions.interacted.GetComponent<PlayerController> ();
+			pc.Damage (1);
+			Destroy (this.gameObject);
+		}
 	}
 }
