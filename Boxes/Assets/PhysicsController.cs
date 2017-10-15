@@ -4,6 +4,7 @@ using System.Collections;
 [RequireComponent (typeof (BoxCollider))]
 public class PhysicsController : MonoBehaviour {
 	public LayerMask collisionMask;
+	public LayerMask interactMask;
 
 	const float skinWidth = .015f;
 	public int horizontalRayCount = 4;
@@ -46,7 +47,8 @@ public class PhysicsController : MonoBehaviour {
 
 			bool hitBool = Physics.Raycast (rayOrigin, Vector3.right * directionX, out hit, rayLength, collisionMask);
 
-			Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength,Color.red);
+			RaycastHit interact;
+			bool interactBool = Physics.Raycast (rayOrigin, Vector3.right * directionX, out interact, rayLength, interactMask);
 
 			if (hitBool) {
 				velocity.x = (hit.distance - skinWidth) * directionX;
@@ -55,6 +57,9 @@ public class PhysicsController : MonoBehaviour {
 				collisions.collided = hit.collider.gameObject;
 				collisions.left = directionX == -1;
 				collisions.right = directionX == 1;
+			}
+			if (interactBool) {
+				collisions.interacted = interact.collider.gameObject;
 			}
 		}
 	}
@@ -70,7 +75,9 @@ public class PhysicsController : MonoBehaviour {
 
 			bool hitBool = Physics.Raycast (rayOrigin, Vector3.up * directionY, out hit, rayLength, collisionMask);
 
-			Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength,Color.red);
+			RaycastHit interact;
+			bool interactBool = Physics.Raycast (rayOrigin, Vector3.up * directionY, out interact, rayLength, interactMask);
+
 
 			if (hitBool) {
 				velocity.y = (hit.distance - skinWidth) * directionY;
@@ -79,6 +86,9 @@ public class PhysicsController : MonoBehaviour {
 				collisions.collided = hit.collider.gameObject;
 				collisions.below = directionY == -1;
 				collisions.above = directionY == 1;
+			}
+			if (interactBool) {
+				collisions.interacted = interact.collider.gameObject;
 			}
 		}
 	}
@@ -112,11 +122,12 @@ public class PhysicsController : MonoBehaviour {
 	public struct CollisionInfo {
 		public bool above, below;
 		public bool left, right;
-		public GameObject collided;
+		public GameObject collided,interacted;
 		public void Reset() {
 			above = below = false;
 			left = right = false;
 			collided = null;
+			interacted = null;
 		}
 	}
 }

@@ -19,7 +19,6 @@ public class BoxController: MonoBehaviour {
 		
 		phys.Move (velocity * Time.deltaTime);
 		BoxController hitBox = CheckBoxCollision ();
-		Debug.Log (hitBox);
 		if (phys.collisions.above || phys.collisions.below
 		   || phys.collisions.right || phys.collisions.left) {
 			//Equal boxes inelastically collide (separate)
@@ -36,6 +35,8 @@ public class BoxController: MonoBehaviour {
 			}
 
 		}
+
+		CheckPlayerCollision ();
 
 	}
 
@@ -59,13 +60,25 @@ public class BoxController: MonoBehaviour {
 		return Vector2.zero;
 	}
 
+	//Damages player if necessary
+	void CheckPlayerCollision() {
+		if (phys.collisions.interacted != null && phys.collisions.interacted.tag == "Player") {
+			PlayerController pc = phys.collisions.interacted.GetComponent<PlayerController> ();
+			pc.Damage (1);
+		}
+	}
 	//returns null if hit a non-box
 	BoxController CheckBoxCollision() {
 		if (phys.collisions.collided != null && phys.collisions.collided.tag == "Box") {
 			BoxController bc = phys.collisions.collided.GetComponent<BoxController> ();	
-			if (bc.velocity.magnitude == 0 && this.mass >= bc.mass) {
-				bc.Push (Collision(), velocity.magnitude);
-			}
+			float bcmass = bc.mass;
+			float bcVelMag = bc.velocity.magnitude;
+			if (bcVelMag == 0 && this.mass >= bcmass) {
+				bc.Push (Collision (), velocity.magnitude / bcmass);
+			} else if (bcVelMag != 0 && this.mass <= bcmass) {
+				Destroy (bc.gameObject);
+				Destroy (gameObject);
+			} 
 			return bc;
 		}
 		return null;

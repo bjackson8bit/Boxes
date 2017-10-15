@@ -7,13 +7,19 @@ public class PlayerController : MonoBehaviour {
 	public float speed = 5f;
 	public float pushPower = 5f;
 	public bool playerOne = true;
+	public GameObject uiparent;
+	HealthController hc;
 
+	public int baseHealth = 3;
+	int health;
 	bool moving = true;
 	Vector2 movementDirection;
 	PhysicsController phys;
 
 	void Start() {
 		phys = gameObject.GetComponent<PhysicsController> ();
+		health = baseHealth;
+		hc = uiparent.GetComponent<HealthController> ();
 	}
 		
 	void FixedUpdate () {
@@ -64,4 +70,10 @@ public class PlayerController : MonoBehaviour {
 			}
 		}
 	}
+
+	internal void Damage(int amt){
+		health -= amt;
+		hc.SetHP (health);
+	}
+
 }
