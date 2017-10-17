@@ -9,8 +9,9 @@ public class PlayerController : MonoBehaviour {
 	public bool playerOne = true;
 	public GameObject uiparent;
 	public int invincibilityFrames = 70;
+	public ScoreController sc;
 	int invincibilityCounter = 0;
-	HealthController hc;
+	internal HealthController hc;
 
 	public int baseHealth = 3;
 	int health;
@@ -44,7 +45,6 @@ public class PlayerController : MonoBehaviour {
 		} else {
 			input = new Vector2 (Input.GetAxisRaw ("Horizontal2"), Input.GetAxisRaw ("Vertical2"));
 		}
-
 		movementDirection = input.normalized;
 
 		Vector2 move = input.normalized;
@@ -92,6 +92,10 @@ public class PlayerController : MonoBehaviour {
 			health -= amt;
 			hc.SetHP (health);
 			this.GetComponent<AudioSource> ().Play ();
+		}
+		
+		if (health <= 0) {
+			sc.GameOver(gameObject);
 		}
 	}
 }

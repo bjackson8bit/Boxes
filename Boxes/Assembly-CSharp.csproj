@@ -48,11 +48,15 @@
   <ItemGroup>
      <Compile Include="Assets\BoxController.cs" />
      <Compile Include="Assets\DontDestroy.cs" />
+     <Compile Include="Assets\GameManager.cs" />
      <Compile Include="Assets\HealthController.cs" />
      <Compile Include="Assets\MoveBullet.cs" />
      <Compile Include="Assets\PhysicsController.cs" />
+     <Compile Include="Assets\PlayMusic.cs" />
      <Compile Include="Assets\PlayerController.cs" />
      <Compile Include="Assets\RaycastController.cs" />
+     <Compile Include="Assets\ScoreController.cs" />
+     <Compile Include="Assets\ScoreRecord.cs" />
      <Compile Include="Assets\Spawner.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>

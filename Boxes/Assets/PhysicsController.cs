@@ -4,6 +4,7 @@ using System.Collections;
 [RequireComponent (typeof (BoxCollider))]
 public class PhysicsController : MonoBehaviour {
 	public LayerMask collisionMask;
+	public LayerMask wallCollisionMask;
 	public LayerMask interactMask;
 
 	const float skinWidth = .015f;
@@ -41,7 +42,7 @@ public class PhysicsController : MonoBehaviour {
 		float rayLength = Mathf.Abs (velocity.x) + skinWidth;
 
 		for (int i = 0; i < horizontalRayCount; i ++) {
-			Vector2 rayOrigin = (directionX == -1)?raycastOrigins.bottomLeft:raycastOrigins.bottomRight;
+			Vector2 rayOrigin = (directionX == -1) ? raycastOrigins.bottomLeft : raycastOrigins.bottomRight;
 			rayOrigin += Vector2.up * (horizontalRaySpacing * i);
 			RaycastHit hit;
 
@@ -112,6 +113,33 @@ public class PhysicsController : MonoBehaviour {
 
 		horizontalRaySpacing = bounds.size.y / (horizontalRayCount - 1);
 		verticalRaySpacing = bounds.size.x / (verticalRayCount - 1);
+	}
+
+	public bool RaycastCheckWall(Vector3 velocity) {
+		float directionX = Mathf.Sign (velocity.x);
+		float rayLength = 2 * skinWidth;
+		for (int i = 0; i < horizontalRayCount; i ++) {
+			Vector2 rayOrigin = (directionX == -1) ? raycastOrigins.bottomLeft : raycastOrigins.bottomRight;
+			rayOrigin += Vector2.up * (horizontalRaySpacing * i);
+			RaycastHit hit;
+
+			bool hitBool = Physics.Raycast (rayOrigin, Vector3.right * directionX, out hit, rayLength, wallCollisionMask);
+			if (hitBool) {
+				return true;
+			}
+		}
+		float directionY = Mathf.Sign (velocity.y);
+		for (int i = 0; i < verticalRayCount; i ++) {
+			Vector2 rayOrigin = (directionY == -1) ? raycastOrigins.bottomLeft : raycastOrigins.topLeft;
+			rayOrigin += Vector2.right * (verticalRaySpacing * i + velocity.x);
+			RaycastHit hit;
+
+			bool hitBool = Physics.Raycast (rayOrigin, Vector3.up * directionY, out hit, rayLength, wallCollisionMask);
+			if (hitBool) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	struct RaycastOrigins {
